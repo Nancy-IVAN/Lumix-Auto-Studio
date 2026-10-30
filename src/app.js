@@ -1,16 +1,18 @@
 const express = require('express');
 const cors = require('cors');
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 const db = require('./db');
 
 const app = express();
+app.disable('x-powered-by'); // Desactiva revelación de versión de Express (S5689)
 app.use(cors());
 app.use(express.json());
 
 // Middleware de autenticación por rol
 const authMiddleware = (rolRequerido) => (req, res, next) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  // Uso de encadenamiento opcional (S6582)
+  if (!authHeader?.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'No autorizado: Token faltante' });
   }
   const token = authHeader.split(' ')[1];
@@ -29,7 +31,6 @@ app.post('/api/v1/ordenes', authMiddleware('mecanico'), async (req, res) => {
       return res.status(400).json({ error: 'Datos incompletos' });
     }
 
-    // Generación criptográficamente segura para SonarCloud
     const ticketCodigo = `TCK-${crypto.randomInt(1000, 10000)}`;
 
     const { rows } = await db.query(
@@ -41,14 +42,16 @@ app.post('/api/v1/ordenes', authMiddleware('mecanico'), async (req, res) => {
     const nuevaOrden = rows[0];
     nuevaOrden.fotosEvidencia = [];
 
-    if (fotosEvidencia && Array.isArray(fotosEvidencia)) {
-      for (const url of fotosEvidencia) {
-        await db.query(
+    // Uso de Promise.all en lugar de await dentro de bucle (S9382)
+    if (Array.isArray(fotosEvidencia) && fotosEvidencia.length > 0) {
+      const inserciones = fotosEvidencia.map((url) =>
+        db.query(
           `INSERT INTO fotos_evidencia (orden_id, url_foto) VALUES ($1, $2)`,
           [nuevaOrden.id, url]
-        );
-        nuevaOrden.fotosEvidencia.push(url);
-      }
+        )
+      );
+      await Promise.all(inserciones);
+      nuevaOrden.fotosEvidencia = fotosEvidencia;
     }
 
     return res.status(201).json(nuevaOrden);
@@ -86,7 +89,8 @@ app.patch('/api/v1/ordenes/:id/estado', authMiddleware('mecanico'), async (req, 
 app.get('/api/v1/finanzas/resumen', authMiddleware('dueno'), async (req, res) => {
   try {
     const invRes = await db.query(`SELECT COALESCE(SUM(stock * costo_inversion), 0) AS inversion FROM refacciones`);
-    const inversionRefacciones = parseFloat(invRes.rows[0].inversion);
+    // Uso de Number.parseFloat (S7773)
+    const inversionRefacciones = Number.parseFloat(invRes.rows[0].inversion);
 
     const ingresosTotales = 15000.00;
     const gananciaNeta = ingresosTotales - inversionRefacciones;
