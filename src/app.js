@@ -1,12 +1,22 @@
 const express = require('express');
 const cors = require('cors');
-const crypto = require('node:crypto'); // Usa el módulo seguro node:crypto
+const crypto = require('node:crypto');
 const db = require('./db');
 
 const app = express();
-app.disable('x-powered-by'); // Desactiva la cabecera X-Powered-By
-app.use(cors());
+app.disable('x-powered-by');
+
+// Configuración segura de CORS con restricciones explícitas
+const corsOptions = {
+  origin: process.env.ALLOWED_ORIGINS || 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
+
+// Resto de tus endpoints...
 
 // Endpoint de órdenes con crypto.randomInt seguro
 app.post('/api/v1/ordenes', authMiddleware('mecanico'), async (req, res) => {
