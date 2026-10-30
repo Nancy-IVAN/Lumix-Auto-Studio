@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const crypto = require('crypto');
 const db = require('./db');
 
 const app = express();
@@ -28,7 +29,8 @@ app.post('/api/v1/ordenes', authMiddleware('mecanico'), async (req, res) => {
       return res.status(400).json({ error: 'Datos incompletos' });
     }
 
-    const ticketCodigo = `TCK-${Math.floor(1000 + Math.random() * 9000)}`;
+    // Generación criptográficamente segura para SonarCloud
+    const ticketCodigo = `TCK-${crypto.randomInt(1000, 10000)}`;
 
     const { rows } = await db.query(
       `INSERT INTO ordenes_trabajo (ticket_codigo, vehiculo_placa, cliente_telefono, descripcion_dano)
