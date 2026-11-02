@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "start": "node src/server.js",
-  "test": "jest --coverage --runInBand"
-},
+    "start": "node src/server.js",
+    "dev": "vite",
+    "test": "jest --coverage"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -15,7 +16,14 @@
     "dotenv": "^18.0.9",
     "express": "^5.3.0",
     "jest": "^30.5.2",
+    "lucide-react": "^1.66.0",
     "pg": "^8.23.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "supertest": "^7.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.2",
+    "vite": "^8.3.5"
   }
 }
