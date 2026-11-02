@@ -76,11 +76,10 @@ app.get('/api/v1/finanzas/resumen', authMiddleware('dueno'), async (req, res) =>
     return res.status(500).json({ error: err.message });
   }
 });
-
 // 4. CP-REST-004: Incremento de Stock de Refacciones
 app.post('/api/v1/inventario/ajuste', authMiddleware('encargado'), async (req, res) => {
   try {
-    const { refaccionId, cantidadAgregada } = req.body;
+    const { refaccionId } = req.body;
     return res.status(200).json({
       refaccionId,
       stockActualizado: 20

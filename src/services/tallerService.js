@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 
 function validarVIN(vin) {
   return typeof vin === 'string' && vin.length === 17 && /^[A-HJ-NPR-Z0-9]{17}$/i.test(vin);
